@@ -345,8 +345,6 @@ Para consultas técnicas, sugerencias de mejora o colaboraciones académicas:
 
 <div align="center">
 
-**LaIABot** representa una contribución significativa a la intersección entre **inteligencia artificial** y **ciencias de la información**, proporcionando una herramienta práctica y académicamente sólida para la modernización de servicios bibliotecarios y documentales.
-
-⭐ **¡Si este proyecto te resulta útil, considera darle una estrella!** ⭐
+**LaIABot** representa una contribución a la intersección entre **Inteligencia Artificial** y **Ciencias de la Documentación**, proporcionando una herramienta práctica y académicamente sólida para la modernización de servicios bibliotecarios y documentales.
 
 </div>
