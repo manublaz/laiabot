@@ -1,5 +1,5 @@
-==============================================================================
-LaIABot: Agente de IA Especializado en Recomendaciones Bibliotecarias       ||
+
+LaIABot: Agente de IA Especializado en Recomendaciones Bibliotecarias
 ==============================================================================
 
 ** Descripción General _______________________________________________________
