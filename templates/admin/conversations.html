@@ -1,0 +1,156 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Conversaciones - LaIABot Admin{% endblock %}
+
+{% block page_title %}Gestión de Conversaciones{% endblock %}
+{% block breadcrumb %}Conversaciones{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3 class="admin-card-title">Historial de Conversaciones</h3>
+        <div class="card-stats">
+            Total: {{ threads|length }} conversaciones
+        </div>
+    </div>
+    <div class="admin-card-content">
+        {% if threads %}
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Modo</th>
+                        <th>Mensajes</th>
+                        <th>Fecha Inicio</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for thread in threads %}
+                    <tr>
+                        <td>{{ thread.id }}</td>
+                        <td>
+                            <strong>{{ thread.title }}</strong>
+                        </td>
+                        <td>
+                            <span class="mode-badge mode-{{ thread.mode }}">
+                                {% if thread.mode == 1 or thread.mode == 'mode1' %}
+                                    📚 Libros
+                                {% elif thread.mode == 2 or thread.mode == 'mode2' %}
+                                    🏛️ Biblioteca
+                                {% else %}
+                                    💬 Chat
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="message-count">{{ thread.message_count }}</span>
+                        </td>
+                        <td class="text-small">{{ thread.dateregistry }}</td>
+                        <td>
+                            <span class="status-badge status-{{ thread.status }}">
+                                {{ thread.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="{{ url_for('admin_view_conversation', thread_id=thread.id) }}" 
+                                   class="btn btn-secondary btn-table" title="Ver conversación">
+                                    👁️
+                                </a>
+                                <form method="POST" action="{{ url_for('admin_delete_conversation', thread_id=thread.id) }}" 
+                                      style="display: inline;" 
+                                      onsubmit="return confirm('¿Estás seguro de eliminar esta conversación? Esta acción no se puede deshacer.')">
+                                    <button type="submit" class="btn btn-danger btn-table" title="Eliminar">
+                                        🗑️
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center">
+            <p class="text-muted">No hay conversaciones registradas.</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <span class="btn-icon">💬</span>
+                Ir al Chat
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.mode-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    background: var(--light-gray);
+    color: var(--text-color);
+}
+
+.mode-1 {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.mode-2 {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.mode-3 {
+    background: #e8f5e8;
+    color: #388e3c;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+}
+
+.status-active {
+    background: #e8f5e8;
+    color: #388e3c;
+}
+
+.status-inactive {
+    background: #fafafa;
+    color: #757575;
+}
+
+.message-count {
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+.card-stats {
+    font-size: var(--font-size-sm);
+    color: var(--medium-gray);
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .admin-table th:nth-child(3),
+    .admin-table td:nth-child(3),
+    .admin-table th:nth-child(5),
+    .admin-table td:nth-child(5),
+    .admin-table th:nth-child(6),
+    .admin-table td:nth-child(6) {
+        display: none;
+    }
+}
+</style>
+{% endblock %}

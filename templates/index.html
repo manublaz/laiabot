@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block title %}LaIABot - Chat{% endblock %}
+
+{% block content %}
+<div class="chat-container" id="chat-container">
+    <div class="chat-sidebar">
+        <div class="sidebar-header">
+            <h3>Conversaciones</h3>
+            <button id="new-chat-btn" class="btn btn-primary btn-sm" title="Nueva conversación">
+                <span class="btn-icon">+</span>
+                Nueva
+            </button>
+        </div>
+        
+        <div class="conversations-list" id="conversations-list">
+            <!-- Las conversaciones se cargarán dinámicamente -->
+        </div>
+    </div>
+
+    <div class="chat-main">
+        <div class="chat-header">
+            <div class="chat-title">
+                <h2 id="conversation-title">Conversación con LaIABot</h2>
+                <span class="chat-mode" id="chat-mode">Modo: Detectando...</span>
+            </div>
+            <div class="chat-actions">
+                <button id="edit-title-btn" class="btn btn-ghost btn-sm" title="Editar título">
+                    <span class="btn-icon">✏️</span>
+                </button>
+                <button id="delete-chat-btn" class="btn btn-ghost btn-sm btn-danger" title="Eliminar conversación">
+                    <span class="btn-icon">🗑️</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages" tabindex="0" role="log" aria-live="polite" aria-label="Mensajes del chat">
+            {% if welcome_message %}
+            <div class="message bot-message">
+                <div class="message-avatar">
+                    <span class="avatar-icon">🤖</span>
+                </div>
+                <div class="message-content">
+                    <div class="message-text">{{ welcome_message }}</div>
+                    <div class="message-time">Ahora</div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if history %}
+                {% for msg in history %}
+                <div class="message {% if msg.sender == 'user' %}user-message{% else %}bot-message{% endif %}">
+                    <div class="message-avatar">
+                        {% if msg.sender == 'user' %}
+                            <span class="avatar-icon">👤</span>
+                        {% else %}
+                            <span class="avatar-icon">🤖</span>
+                        {% endif %}
+                    </div>
+                    <div class="message-content">
+                        <div class="message-text">{{ msg.content|safe }}</div>
+                        <div class="message-time">{{ msg.timestamp }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="chat-input-container">
+            <div class="typing-indicator" id="typing-indicator" style="display: none;" role="status" aria-label="LaIABot está escribiendo">
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span class="typing-text">LaIABot está escribiendo...</span>
+            </div>
+            
+            <form class="chat-input-form" id="chat-form">
+                <div class="input-group">
+                    <textarea 
+                        id="message-input" 
+                        class="chat-input" 
+                        placeholder="Escribe tu mensaje aquí... (Pregúntame sobre libros, servicios de la biblioteca o charlemos)"
+                        rows="1"
+                        maxlength="1000"
+                        required
+                        aria-label="Escribir mensaje"
+                        aria-describedby="input-info"
+                    ></textarea>
+                    <button type="submit" class="btn btn-primary send-btn" id="send-btn" aria-label="Enviar mensaje">
+                        <span class="btn-icon">📤</span>
+                        <span class="btn-text">Enviar</span>
+                    </button>
+                </div>
+                <div class="input-info" id="input-info">
+                    <span class="char-counter">
+                        <span id="char-count">0</span>/1000
+                    </span>
+                    <span class="input-hint">Presiona Enter para enviar, Shift+Enter para nueva línea</span>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar título -->
+<div class="modal" id="edit-title-modal" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-title">Editar título de conversación</h3>
+            <button class="modal-close" id="modal-close" aria-label="Cerrar modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <label for="new-title-input" class="sr-only">Nuevo título</label>
+            <input type="text" id="new-title-input" class="form-input" placeholder="Nuevo título" aria-label="Nuevo título de conversación" maxlength="100">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancel-edit">Cancelar</button>
+            <button class="btn btn-primary" id="save-title">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Información de accesibilidad y atajos de teclado (oculta visualmente) -->
+<div class="sr-only" role="region" aria-label="Información de atajos de teclado">
+    <h3>Atajos de teclado disponibles:</h3>
+    <ul>
+        <li>Ctrl/Cmd + Enter: Nueva conversación</li>
+        <li>Ctrl/Cmd + E: Editar título</li>
+        <li>Ctrl/Cmd + D: Eliminar conversación</li>
+        <li>Ctrl/Cmd + Shift + E: Activar/desactivar auto-expansión</li>
+        <li>Ctrl/Cmd + End: Ir al final del chat</li>
+        <li>Ctrl/Cmd + Home: Ir al inicio del chat</li>
+        <li>Page Down/Up: Desplazarse por el chat</li>
+    </ul>
+</div>
+
+<script>
+    // Variables globales - Compatible con index.html
+    let currentThreadId = {{ thread_id if thread_id else 'null' }};
+    let isLoading = false;
+    
+    // Debug: Mostrar thread ID en consola
+    console.log('Thread ID cargado:', currentThreadId);
+    
+    // Verificar que tenemos un thread ID válido
+    if (!currentThreadId || currentThreadId === 'null') {
+        console.error('ADVERTENCIA: No hay thread ID válido');
+        // No mostrar alert para mejor UX en index
+    }
+    
+    // Configuración inicial para auto-expansión
+    window.LaIABotChatConfig = {
+        autoExpandEnabled: true,
+        debugMode: false,
+        threadId: currentThreadId
+    };
+    
+    // Inicialización mejorada para index.html
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cargar conversaciones
+        loadConversations();
+        
+        // Configurar event listeners
+        setupEventListeners();
+        
+        // Auto-resize del textarea
+        autoResizeTextarea();
+        
+        // Inicializar auto-expansión
+        if (typeof initializeAutoExpansion === 'function') {
+            initializeAutoExpansion();
+        }
+        
+        // Destacar conversación actual si existe
+        if (currentThreadId) {
+            highlightCurrentConversation();
+            
+            // Inicializar contador de mensajes y ajustar altura
+            if (typeof initializeMessageCount === 'function') {
+                initializeMessageCount();
+            }
+            if (typeof adjustInitialChatHeight === 'function') {
+                adjustInitialChatHeight();
+            }
+            
+            // Scroll al final
+            if (typeof scrollToBottom === 'function') {
+                scrollToBottom();
+            }
+        }
+        
+        // Configurar accesibilidad
+        setupAccessibilityFeatures();
+    });
+    
+    // Funciones de accesibilidad (duplicadas para compatibilidad con index.html)
+    function setupAccessibilityFeatures() {
+        const chatMessages = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        
+        // Anunciar nuevos mensajes a lectores de pantalla
+        if (chatMessages) {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                        const newMessages = Array.from(mutation.addedNodes).filter(node => 
+                            node.nodeType === Node.ELEMENT_NODE && node.classList.contains('message')
+                        );
+                        
+                        if (newMessages.length > 0) {
+                            // Actualizar aria-live region
+                            chatMessages.setAttribute('aria-busy', 'false');
+                        }
+                    }
+                });
+            });
+            
+            observer.observe(chatMessages, {
+                childList: true,
+                subtree: false
+            });
+        }
+        
+        // Mejorar navegación con teclado
+        if (messageInput) {
+            messageInput.addEventListener('keydown', function(e) {
+                // Escape para limpiar el input
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    this.value = '';
+                    if (typeof updateCharCount === 'function') {
+                        updateCharCount();
+                    }
+                    this.dispatchEvent(new Event('input'));
+                }
+            });
+        }
+    }
+    
+    // Funciones básicas requeridas (fallbacks para index.html)
+    function loadConversations() {
+        if (typeof window.ChatApp !== 'undefined' && window.ChatApp.loadConversations) {
+            return window.ChatApp.loadConversations();
+        }
+        
+        // Fallback simple
+        fetch('/api/conversations')
+            .then(response => response.json())
+            .then(conversations => {
+                const conversationsList = document.getElementById('conversations-list');
+                if (!conversationsList) return;
+                
+                conversationsList.innerHTML = '';
+                
+                if (conversations.length === 0) {
+                    conversationsList.innerHTML = '<div class="conversation-item"><div class="conversation-title">No hay conversaciones</div></div>';
+                    return;
+                }
+                
+                conversations.forEach(conversation => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'conversation-item';
+                    itemDiv.dataset.threadId = conversation.id;
+                    
+                    if (conversation.id === currentThreadId) {
+                        itemDiv.classList.add('active');
+                    }
+                    
+                    const modeText = getModeText(conversation.mode);
+                    const date = new Date(conversation.date).toLocaleDateString('es-ES');
+                    
+                    itemDiv.innerHTML = `
+                        <div class="conversation-title">${conversation.title}</div>
+                        <div class="conversation-meta">
+                            <span>${modeText}</span>
+                            <span>${date}</span>
+                        </div>
+                    `;
+                    
+                    itemDiv.addEventListener('click', () => {
+                        window.location.href = `/chat/${conversation.id}`;
+                    });
+                    
+                    conversationsList.appendChild(itemDiv);
+                });
+            })
+            .catch(error => console.error('Error loading conversations:', error));
+    }
+    
+    function getModeText(mode) {
+        switch (mode) {
+            case 1:
+            case 'mode1':
+                return 'Libros';
+            case 2:
+            case 'mode2':
+                return 'Biblioteca';
+            case 3:
+            case 'mode3':
+                return 'Chat';
+            default:
+                return 'Chat';
+        }
+    }
+    
+    function setupEventListeners() {
+        // Nuevo chat
+        const newChatBtn = document.getElementById('new-chat-btn');
+        if (newChatBtn) {
+            newChatBtn.addEventListener('click', function() {
+                window.location.href = '/new_chat';
+            });
+        }
+        
+        // Otros listeners básicos se manejan en chat.js
+    }
+    
+    function highlightCurrentConversation() {
+        const items = document.querySelectorAll('.conversation-item');
+        items.forEach(item => {
+            if (parseInt(item.dataset.threadId) === currentThreadId) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+    
+    function autoResizeTextarea() {
+        const messageInput = document.getElementById('message-input');
+        if (messageInput) {
+            messageInput.style.height = '44px';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+        }
+    }
+    
+    // Funciones de utilidad para depuración
+    window.debugChat = function() {
+        console.log('=== LaIABot Chat Debug Info (Index) ===');
+        console.log('Thread ID:', currentThreadId);
+        console.log('Loading state:', isLoading);
+        console.log('Auto-expand enabled:', window.LaIABotChatConfig?.autoExpandEnabled);
+        if (typeof window.ChatDebug !== 'undefined') {
+            console.log('Auto-expand enabled (advanced):', window.ChatDebug.getAutoExpandEnabled?.());
+            console.log('Message count:', window.ChatDebug.getMessageCount?.());
+            console.log('Chat height:', window.ChatDebug.getChatHeight?.());
+            console.log('Chat scroll height:', window.ChatDebug.getChatScrollHeight?.());
+        }
+        console.log('=======================================');
+    };
+    
+    // Mensaje de ayuda en consola
+    console.log('%cLaIABot Chat con Auto-Expansión Cargado', 'color: #5877b8; font-weight: bold;');
+    console.log('Usa debugChat() para ver información de depuración.');
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

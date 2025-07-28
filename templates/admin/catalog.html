@@ -1,0 +1,94 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Catálogo - LaIABot Admin{% endblock %}
+
+{% block page_title %}Gestión del Catálogo{% endblock %}
+{% block breadcrumb %}Catálogo{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('admin_add_book') }}" class="btn btn-primary">
+    <svg class="btn-icon" data-feather="plus"></svg>
+    Agregar Libro
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3 class="admin-card-title">Libros en el Catálogo</h3>
+        <div class="card-stats">
+            Total: {{ books|length }} libros
+        </div>
+    </div>
+    <div class="admin-card-content">
+        {% if books %}
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Autor</th>
+                        <th>Editorial</th>
+                        <th>Año</th>
+                        <th>Fecha Registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in books %}
+                    <tr>
+                        <td>{{ book.id }}</td>
+                        <td>
+                            <strong>{{ book.title }}</strong>
+                            {% if book.abstract %}
+                            <div class="text-small text-muted">
+                                {{ book.abstract[:100] }}{% if book.abstract|length > 100 %}...{% endif %}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>{{ book.author }}</td>
+                        <td>{{ book.publisher or 'N/A' }}</td>
+                        <td>{{ book.year or 'N/A' }}</td>
+                        <td class="text-small">{{ book.dateregistry }}</td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="{{ url_for('admin_edit_book', book_id=book.id) }}" 
+                                   class="btn btn-ghost btn-sm" title="Editar">
+                                    <svg class="btn-icon" data-feather="edit-2"></svg>
+                                    <span class="sr-only">Editar</span>
+                                </a>
+                                <form method="POST" action="{{ url_for('admin_delete_book', book_id=book.id) }}" 
+                                      style="display: inline;" 
+                                      onsubmit="return confirm('¿Estás seguro de eliminar este libro?')">
+                                    <button type="submit" class="btn btn-ghost btn-sm btn-danger" title="Eliminar">
+                                        <svg class="btn-icon" data-feather="trash-2"></svg>
+                                        <span class="sr-only">Eliminar</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center">
+            <p class="text-muted">No hay libros en el catálogo.</p>
+            <a href="{{ url_for('admin_add_book') }}" class="btn btn-primary">
+                <svg class="btn-icon" data-feather="book"></svg>
+                Agregar Primer Libro
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Feather Icons
+    feather.replace();
+});
+</script>
+{% endblock %}

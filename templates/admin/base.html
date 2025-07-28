@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LaIABot Admin{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <meta name="description" content="Panel de administración de LaIABot">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <nav class="admin-sidebar">
+            <div class="admin-sidebar-header">
+                <a href="{{ url_for('admin_dashboard') }}" class="admin-logo">
+                    <svg data-feather="book-open"></svg>
+                    LaIABot Admin
+                </a>
+            </div>
+            
+            <div class="admin-nav">
+                <a href="{{ url_for('admin_dashboard') }}" class="admin-nav-item {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+                    <svg class="admin-nav-icon" data-feather="home"></svg>
+                    Dashboard
+                </a>
+                
+                <a href="{{ url_for('admin_catalog') }}" class="admin-nav-item {% if 'catalog' in request.endpoint %}active{% endif %}">
+                    <svg class="admin-nav-icon" data-feather="book"></svg>
+                    Catálogo
+                </a>
+                
+                <a href="{{ url_for('admin_library_info') }}" class="admin-nav-item {% if 'library_info' in request.endpoint %}active{% endif %}">
+                    <svg class="admin-nav-icon" data-feather="info"></svg>
+                    Info Biblioteca
+                </a>
+                
+                <a href="{{ url_for('admin_conversations') }}" class="admin-nav-item {% if 'conversations' in request.endpoint %}active{% endif %}">
+                    <svg class="admin-nav-icon" data-feather="message-square"></svg>
+                    Conversaciones
+                </a>
+                
+                <a href="{{ url_for('admin_prompts') }}" class="admin-nav-item {% if 'prompts' in request.endpoint %}active{% endif %}">
+                    <svg class="admin-nav-icon" data-feather="cpu"></svg>
+                    Prompts
+                </a>
+                
+                <a href="{{ url_for('admin_welcome') }}" class="admin-nav-item {% if 'welcome' in request.endpoint %}active{% endif %}">
+                    <svg class="admin-nav-icon" data-feather="smile"></svg>
+                    Bienvenidas
+                </a>
+                
+                <a href="{{ url_for('admin_config') }}" class="admin-nav-item {% if 'config' in request.endpoint %}active{% endif %}">
+                    <svg class="admin-nav-icon" data-feather="settings"></svg>
+                    Configuración
+                </a>
+            </div>
+            
+            <div class="admin-sidebar-footer">
+                <div class="admin-user-info">
+                    <div class="admin-user-avatar">A</div>
+                    <div class="admin-user-name">Administrador</div>
+                </div>
+                
+                <div class="admin-actions">
+                    <a href="{{ url_for('index') }}" class="btn btn-ghost btn-sm" title="Ver chat">
+                        <svg class="btn-icon" data-feather="message-circle"></svg>
+                        Ir al Chat
+                    </a>
+                    
+                    <a href="{{ url_for('admin_logout') }}" class="logout-btn">
+                        <svg data-feather="log-out"></svg>
+                        Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <div class="admin-header-content">
+                    <div class="admin-title-section">
+                        <h1 class="admin-page-title">{% block page_title %}LaIABot Admin{% endblock %}</h1>
+                        <nav class="admin-breadcrumb" aria-label="Breadcrumb">
+                            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                            {% if breadcrumb %}
+                                <svg data-feather="chevron-right"></svg>
+                                <span>{% block breadcrumb %}{% endblock %}</span>
+                            {% endif %}
+                        </nav>
+                    </div>
+                    
+                    <div class="admin-header-actions">
+                        {% block header_actions %}{% endblock %}
+                    </div>
+                </div>
+            </header>
+
+            <div class="admin-content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                                <div class="flash-message flash-{{ category }}">
+                                    {% if category == 'success' %}
+                                        <svg data-feather="check-circle"></svg>
+                                    {% elif category == 'error' %}
+                                        <svg data-feather="alert-circle"></svg>
+                                    {% elif category == 'warning' %}
+                                        <svg data-feather="alert-triangle"></svg>
+                                    {% else %}
+                                        <svg data-feather="info"></svg>
+                                    {% endif %}
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

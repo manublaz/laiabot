@@ -1,0 +1,105 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Info Biblioteca - LaIABot Admin{% endblock %}
+
+{% block page_title %}Información de la Biblioteca{% endblock %}
+{% block breadcrumb %}Info Biblioteca{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('admin_add_library_info') }}" class="btn btn-primary">
+    <span class="btn-icon">➕</span>
+    Agregar Información
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3 class="admin-card-title">Información de Servicios y Actividades</h3>
+        <div class="card-stats">
+            Total: {{ info|length }} elementos
+        </div>
+    </div>
+    <div class="admin-card-content">
+        {% if info %}
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Contenido</th>
+                        <th>Fecha Registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in info %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>
+                            <strong>{{ item.title }}</strong>
+                        </td>
+                        <td>
+                            <div class="content-preview">
+                                {{ item.content[:150] }}{% if item.content|length > 150 %}...{% endif %}
+                            </div>
+                        </td>
+                        <td class="text-small">{{ item.dateregistry }}</td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="{{ url_for('admin_edit_library_info', info_id=item.id) }}" 
+                                   class="btn btn-secondary btn-table" title="Editar">
+                                    ✏️
+                                </a>
+                                <form method="POST" action="{{ url_for('admin_delete_library_info', info_id=item.id) }}" 
+                                      style="display: inline;" 
+                                      onsubmit="return confirm('¿Estás seguro de eliminar esta información?')">
+                                    <button type="submit" class="btn btn-danger btn-table" title="Eliminar">
+                                        🗑️
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center">
+            <p class="text-muted">No hay información registrada.</p>
+            <a href="{{ url_for('admin_add_library_info') }}" class="btn btn-primary">
+                <span class="btn-icon">ℹ️</span>
+                Agregar Primera Información
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.content-preview {
+    font-size: var(--font-size-sm);
+    line-height: 1.4;
+    color: var(--text-color);
+}
+
+.card-stats {
+    font-size: var(--font-size-sm);
+    color: var(--medium-gray);
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .admin-table th:nth-child(4),
+    .admin-table td:nth-child(4) {
+        display: none;
+    }
+    
+    .content-preview {
+        font-size: var(--font-size-xs);
+    }
+}
+</style>
+{% endblock %}

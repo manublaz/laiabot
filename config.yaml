@@ -1,0 +1,47 @@
+# Configuración de LaIABot
+app:
+  name: "LaIABot"
+  version: "1.0.0"
+  description: "Agente de IA especializado en recomendaciones bibliotecarias"
+
+flask:
+  debug: true
+  host: "0.0.0.0"
+  port: 5000
+  secret_key: "laiabot_secret_key_change_in_production"
+
+groq:
+  api_key: ""
+  model: "llama3-8b-8192"
+  temperature: 0.7
+  max_tokens: 1024
+
+database:
+  catalog: "catalog.db"
+  chatbot: "chatbot.db" 
+  library: "ourlibrary.db"
+
+search:
+  max_results: 5
+  use_fts5: true
+  fallback_like: true
+
+conversation:
+  max_history: 10
+  auto_title: true
+  save_all_messages: true
+
+ui:
+  theme: "professional"
+  colors:
+    primary: "#2c3e50"
+    secondary: "#34495e"
+    accent: "#3498db"
+    background: "#ecf0f1"
+    text: "#2c3e50"
+    border: "#bdc3c7"
+
+limits:
+  max_message_length: 1000
+  max_conversation_length: 100
+  session_timeout: 3600

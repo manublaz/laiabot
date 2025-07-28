@@ -1,0 +1,220 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Configuración - LaIABot Admin{% endblock %}
+
+{% block page_title %}Configuración del Sistema{% endblock %}
+{% block breadcrumb %}Configuración{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3 class="admin-card-title">Configuración de LaIABot</h3>
+    </div>
+    <div class="admin-card-content">
+        <div class="config-sections">
+            
+            <!-- Configuración de la Aplicación -->
+            <div class="config-section">
+                <h4 class="config-title">
+                    <svg data-feather="package"></svg>
+                    Aplicación
+                </h4>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>Nombre:</label>
+                        <span>{{ config.app.name }}</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Versión:</label>
+                        <span>{{ config.app.version }}</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Descripción:</label>
+                        <span>{{ config.app.description }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de Flask -->
+            <div class="config-section">
+                <h4 class="config-title">
+                    <svg data-feather="server"></svg>
+                    Flask
+                </h4>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>Debug:</label>
+                        <span class="status-badge {% if config.flask.debug %}status-active{% else %}status-inactive{% endif %}">
+                            {{ 'Activado' if config.flask.debug else 'Desactivado' }}
+                        </span>
+                    </div>
+                    <div class="config-item">
+                        <label>Host:</label>
+                        <span>{{ config.flask.host }}</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Puerto:</label>
+                        <span>{{ config.flask.port }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de Groq -->
+            <div class="config-section">
+                <h4 class="config-title">
+                    <svg data-feather="zap"></svg>
+                    Groq API
+                </h4>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>API Key:</label>
+                        <span class="api-key">{{ config.groq.api_key[:10] }}...{{ config.groq.api_key[-4:] }}</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Modelo:</label>
+                        <span>{{ config.groq.model }}</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Temperatura:</label>
+                        <span>{{ config.groq.temperature }}</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Max Tokens:</label>
+                        <span>{{ config.groq.max_tokens }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de Búsqueda -->
+            <div class="config-section">
+                <h4 class="config-title">
+                    <svg data-feather="search"></svg>
+                    Búsqueda
+                </h4>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>Resultados máximos:</label>
+                        <span>{{ config.search.max_results }}</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Usar FTS5:</label>
+                        <span class="status-badge {% if config.search.use_fts5 %}status-active{% else %}status-inactive{% endif %}">
+                            {{ 'Sí' if config.search.use_fts5 else 'No' }}
+                        </span>
+                    </div>
+                    <div class="config-item">
+                        <label>Fallback LIKE:</label>
+                        <span class="status-badge {% if config.search.fallback_like %}status-active{% else %}status-inactive{% endif %}">
+                            {{ 'Sí' if config.search.fallback_like else 'No' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de Conversación -->
+            <div class="config-section">
+                <h4 class="config-title">
+                    <svg data-feather="message-square"></svg>
+                    Conversación
+                </h4>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>Historial máximo:</label>
+                        <span>{{ config.conversation.max_history }} mensajes</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Auto título:</label>
+                        <span class="status-badge {% if config.conversation.auto_title %}status-active{% else %}status-inactive{% endif %}">
+                            {{ 'Sí' if config.conversation.auto_title else 'No' }}
+                        </span>
+                    </div>
+                    <div class="config-item">
+                        <label>Guardar mensajes:</label>
+                        <span class="status-badge {% if config.conversation.save_all_messages %}status-active{% else %}status-inactive{% endif %}">
+                            {{ 'Sí' if config.conversation.save_all_messages else 'No' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de UI -->
+            <div class="config-section">
+                <h4 class="config-title">
+                    <svg data-feather="palette"></svg>
+                    Interfaz
+                </h4>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>Tema:</label>
+                        <span>{{ config.ui.theme|title }}</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Color primario:</label>
+                        <span class="color-preview" style="background-color: {{ config.ui.colors.primary }}">{{ config.ui.colors.primary }}</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Color secundario:</label>
+                        <span class="color-preview" style="background-color: {{ config.ui.colors.secondary }}">{{ config.ui.colors.secondary }}</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Color de acento:</label>
+                        <span class="color-preview" style="background-color: {{ config.ui.colors.accent }}">{{ config.ui.colors.accent }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de Límites -->
+            <div class="config-section">
+                <h4 class="config-title">
+                    <svg data-feather="shield"></svg>
+                    Límites
+                </h4>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>Longitud máxima mensaje:</label>
+                        <span>{{ config.limits.max_message_length }} caracteres</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Longitud máxima conversación:</label>
+                        <span>{{ config.limits.max_conversation_length }} mensajes</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Timeout de sesión:</label>
+                        <span>{{ config.limits.session_timeout }} segundos</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="config-actions">
+            <div class="alert alert-info">
+                <svg data-feather="info" style="width: 1.25rem; height: 1.25rem; flex-shrink: 0;"></svg>
+                <div>
+                    <strong>Información:</strong> Para modificar la configuración, edita el archivo <code>config.yaml</code> y reinicia la aplicación.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Feather Icons
+    feather.replace();
+});
+</script>
+
+<style>
+/* Estilos específicos para config.html */
+code {
+    background: var(--admin-color-surface-elevated);
+    color: var(--admin-color-text-primary);
+    padding: 0.125rem 0.25rem;
+    border-radius: var(--radius-sm);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-size: 0.875em;
+    font-weight: var(--font-weight-medium);
+}
+</style>
+{% endblock %}

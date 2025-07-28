@@ -1,0 +1,144 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Prompts - LaIABot Admin{% endblock %}
+
+{% block page_title %}Gestión de Prompts{% endblock %}
+{% block breadcrumb %}Prompts{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url_for('admin_add_prompt') }}" class="btn btn-primary">
+    <svg class="btn-icon" data-feather="plus"></svg>
+    Agregar Prompt
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3 class="admin-card-title">Prompts del Sistema</h3>
+        <div class="card-stats">
+            Total: {{ prompts|length }} prompts
+        </div>
+    </div>
+    <div class="admin-card-content">
+        {% if prompts %}
+        <div class="prompts-grid">
+            {% for prompt in prompts %}
+            <div class="prompt-card">
+                <div class="prompt-header">
+                    <h4 class="prompt-title">{{ prompt.title }}</h4>
+                    <div class="prompt-meta">
+                        <span class="prompt-mode">{{ prompt.mode|upper }}</span>
+                        <span class="prompt-type">{{ prompt.type|title }}</span>
+                        <span class="prompt-status status-{{ prompt.status }}">{{ prompt.status|title }}</span>
+                    </div>
+                </div>
+                <div class="prompt-content">
+                    <div class="prompt-preview">
+                        {{ prompt.content[:200] }}{% if prompt.content|length > 200 %}...{% endif %}
+                    </div>
+                    <div class="prompt-actions">
+                        <button class="btn btn-ghost btn-sm view-prompt" 
+                                data-content="{{ prompt.content|e }}"
+                                data-title="{{ prompt.title }}">
+                            <svg class="btn-icon" data-feather="eye"></svg>
+                            Ver Completo
+                        </button>
+                        <a href="{{ url_for('admin_edit_prompt', prompt_id=prompt.id) }}" class="btn btn-ghost btn-sm">
+                            <svg class="btn-icon" data-feather="edit-2"></svg>
+                            Editar
+                        </a>
+                        <form method="POST" action="{{ url_for('admin_delete_prompt', prompt_id=prompt.id) }}" 
+                              style="display: inline;" 
+                              onsubmit="return confirm('¿Estás seguro de eliminar este prompt? Esta acción no se puede deshacer.')">
+                            <button type="submit" class="btn btn-ghost btn-sm btn-danger">
+                                <svg class="btn-icon" data-feather="trash-2"></svg>
+                                <span class="sr-only">Eliminar</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="prompt-footer">
+                    <span class="prompt-date">{{ prompt.dateregistry }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center">
+            <p class="text-muted">No hay prompts configurados.</p>
+            <a href="{{ url_for('admin_add_prompt') }}" class="btn btn-primary">
+                <svg class="btn-icon" data-feather="plus"></svg>
+                Agregar Primer Prompt
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para ver prompt completo -->
+<div class="modal" id="prompt-modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3 id="modal-prompt-title">Prompt</h3>
+            <button class="modal-close">
+                <svg data-feather="x"></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <pre id="modal-prompt-content" class="prompt-full-content"></pre>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary modal-close">
+                <svg class="btn-icon" data-feather="x"></svg>
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Feather Icons
+    feather.replace();
+    
+    const viewButtons = document.querySelectorAll('.view-prompt');
+    const modal = document.getElementById('prompt-modal');
+    const modalTitle = document.getElementById('modal-prompt-title');
+    const modalContent = document.getElementById('modal-prompt-content');
+    const closeButtons = modal.querySelectorAll('.modal-close');
+    
+    viewButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const title = this.dataset.title;
+            const content = this.dataset.content;
+            
+            modalTitle.textContent = title;
+            modalContent.textContent = content;
+            modal.classList.add('show');
+            
+            // Re-initialize icons in modal
+            feather.replace();
+        });
+    });
+    
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            modal.classList.remove('show');
+        });
+    });
+    
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+        }
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('show') {
+            modal.classList.remove('show');
+        }
+    });
+});
+</script>
+{% endblock %}

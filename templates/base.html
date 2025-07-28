@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LaIABot - Asistente Bibliotecario{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <meta name="description" content="LaIABot - Agente de IA especializado en recomendaciones bibliotecarias">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+        {% block header %}
+        <header class="header">
+            <div class="header-content">
+                <a href="{{ url_for('index') }}" class="logo">
+                    <svg class="logo-icon" data-feather="book-open"></svg>
+                    LaIABot
+                </a>
+                <nav class="nav">
+                    {% block nav %}
+                    <a href="{{ url_for('index') }}" class="nav-link">
+                        <svg data-feather="message-circle"></svg>
+                        Chat
+                    </a>
+                    <a href="{{ url_for('admin_login') }}" class="nav-link">
+                        <svg data-feather="settings"></svg>
+                        Admin
+                    </a>
+                    {% endblock %}
+                </nav>
+            </div>
+        </header>
+        {% endblock %}
+
+        <main class="main">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for message in messages %}
+                            <div class="flash-message flash-error">
+                                <svg data-feather="alert-circle"></svg>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

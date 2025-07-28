@@ -1,0 +1,276 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard - LaIABot Admin{% endblock %}
+
+{% block page_title %}Panel de Control{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <svg data-feather="book"></svg>
+        </div>
+        <div class="stat-number" id="books-count">0</div>
+        <div class="stat-label">Libros en Catálogo</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <svg data-feather="message-square"></svg>
+        </div>
+        <div class="stat-number" id="conversations-count">0</div>
+        <div class="stat-label">Conversaciones Totales</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <svg data-feather="info"></svg>
+        </div>
+        <div class="stat-number" id="library-info-count">0</div>
+        <div class="stat-label">Info de Biblioteca</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">
+            <svg data-feather="cpu"></svg>
+        </div>
+        <div class="stat-number" id="prompts-count">0</div>
+        <div class="stat-label">Prompts Configurados</div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3 class="admin-card-title">Actividad Reciente</h3>
+    </div>
+    <div class="admin-card-content">
+        <div class="activity-list" id="recent-activity">
+            <div class="activity-item">
+                <div class="activity-description">Cargando actividad reciente...</div>
+                <div class="activity-time">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3 class="admin-card-title">Acciones Rápidas</h3>
+    </div>
+    <div class="admin-card-content">
+        <div class="quick-actions">
+            <a href="{{ url_for('admin_catalog') }}" class="btn btn-primary">
+                <svg class="btn-icon" data-feather="book"></svg>
+                Ver Catálogo
+            </a>
+            <a href="{{ url_for('admin_library_info') }}" class="btn btn-primary">
+                <svg class="btn-icon" data-feather="info"></svg>
+                Ver Info Biblioteca
+            </a>
+            <a href="{{ url_for('admin_conversations') }}" class="btn btn-secondary">
+                <svg class="btn-icon" data-feather="message-square"></svg>
+                Ver Conversaciones
+            </a>
+            <a href="{{ url_for('admin_config') }}" class="btn btn-secondary">
+                <svg class="btn-icon" data-feather="settings"></svg>
+                Configuración
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3 class="admin-card-title">Estado del Sistema</h3>
+    </div>
+    <div class="admin-card-content">
+        <div class="system-status">
+            <div class="status-item">
+                <span class="status-label">
+                    <svg data-feather="zap" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></svg>
+                    API Groq:
+                </span>
+                <span class="status-indicator" id="groq-status">
+                    <div class="spinner"></div>
+                    Verificando...
+                </span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">
+                    <svg data-feather="database" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></svg>
+                    Base de Datos:
+                </span>
+                <span class="status-indicator status-ok">
+                    <svg data-feather="check-circle" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></svg>
+                    Conectada
+                </span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">
+                    <svg data-feather="search" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></svg>
+                    Índices FTS:
+                </span>
+                <span class="status-indicator" id="fts-status">
+                    <div class="spinner"></div>
+                    Verificando...
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Feather Icons first
+    feather.replace();
+    
+    loadDashboardStats();
+    loadRecentActivity();
+    checkSystemStatus();
+});
+
+async function loadDashboardStats() {
+    try {
+        const response = await fetch('/admin/api/stats');
+        if (response.ok) {
+            const stats = await response.json();
+            
+            // Animate number changes
+            animateNumber('books-count', stats.books || 0);
+            animateNumber('conversations-count', stats.conversations || 0);
+            animateNumber('library-info-count', stats.library_info || 0);
+            animateNumber('prompts-count', stats.prompts || 0);
+        }
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+function animateNumber(elementId, targetValue) {
+    const element = document.getElementById(elementId);
+    const startValue = 0;
+    const duration = 1000;
+    const startTime = Date.now();
+    
+    function update() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const currentValue = Math.floor(startValue + (targetValue - startValue) * progress);
+        
+        element.textContent = currentValue;
+        
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    
+    update();
+}
+
+async function loadRecentActivity() {
+    try {
+        const response = await fetch('/admin/api/recent-activity');
+        if (response.ok) {
+            const activities = await response.json();
+            const container = document.getElementById('recent-activity');
+            
+            if (activities.length === 0) {
+                container.innerHTML = '<div class="activity-item"><div class="activity-description">No hay actividad reciente</div></div>';
+                return;
+            }
+            
+            container.innerHTML = activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-description">${activity.description}</div>
+                    <div class="activity-time">${activity.time}</div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading recent activity:', error);
+        const container = document.getElementById('recent-activity');
+        container.innerHTML = '<div class="activity-item"><div class="activity-description">Error al cargar actividad</div></div>';
+    }
+}
+
+async function checkSystemStatus() {
+    // Verificar estado de API Groq
+    try {
+        const response = await fetch('/admin/api/check-groq');
+        const groqStatus = document.getElementById('groq-status');
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.status === 'ok') {
+                groqStatus.innerHTML = `
+                    <svg data-feather="check-circle" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></svg>
+                    Conectada
+                `;
+                groqStatus.className = 'status-indicator status-ok';
+            } else {
+                groqStatus.innerHTML = `
+                    <svg data-feather="x-circle" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></svg>
+                    Error de conexión
+                `;
+                groqStatus.className = 'status-indicator status-error';
+            }
+        } else {
+            groqStatus.innerHTML = `
+                <svg data-feather="x-circle" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></svg>
+                No disponible
+            `;
+            groqStatus.className = 'status-indicator status-error';
+        }
+    } catch (error) {
+        const groqStatus = document.getElementById('groq-status');
+        groqStatus.innerHTML = `
+            <svg data-feather="x-circle" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></svg>
+            Error de conexión
+        `;
+        groqStatus.className = 'status-indicator status-error';
+    }
+    
+    // Verificar índices FTS
+    try {
+        const response = await fetch('/admin/api/check-fts');
+        const ftsStatus = document.getElementById('fts-status');
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.status === 'ok') {
+                ftsStatus.innerHTML = `
+                    <svg data-feather="check-circle" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></svg>
+                    Funcionando
+                `;
+                ftsStatus.className = 'status-indicator status-ok';
+            } else {
+                ftsStatus.innerHTML = `
+                    <svg data-feather="alert-triangle" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></svg>
+                    Necesita rebuild
+                `;
+                ftsStatus.className = 'status-indicator status-warning';
+            }
+        } else {
+            ftsStatus.innerHTML = `
+                <svg data-feather="x-circle" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></svg>
+                Error
+            `;
+            ftsStatus.className = 'status-indicator status-error';
+        }
+    } catch (error) {
+        const ftsStatus = document.getElementById('fts-status');
+        ftsStatus.innerHTML = `
+            <svg data-feather="x-circle" style="width: 1rem; height: 1rem; margin-right: 0.25rem;"></svg>
+            Error
+        `;
+        ftsStatus.className = 'status-indicator status-error';
+    }
+    
+    // Re-initialize icons after dynamic content
+    feather.replace();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Mensajes de Bienvenida - LaIABot Admin{% endblock %}
+
+{% block page_title %}Mensajes de Bienvenida{% endblock %}
+{% block breadcrumb %}Bienvenidas{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3 class="admin-card-title">Mensajes de Bienvenida</h3>
+        <div class="card-stats">
+            Total: {{ welcomes|length }} mensajes
+        </div>
+    </div>
+    <div class="admin-card-content">
+        {% if welcomes %}
+        <div class="welcome-grid">
+            {% for welcome in welcomes %}
+            <div class="welcome-card">
+                <div class="welcome-content">
+                    {{ welcome.content }}
+                </div>
+                <div class="welcome-footer">
+                    <span class="welcome-date">{{ welcome.dateregistry }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center">
+            <p class="text-muted">No hay mensajes de bienvenida configurados.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.welcome-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.welcome-card {
+    background: var(--light-gray);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.welcome-card:hover {
+    box-shadow: var(--shadow);
+}
+
+.welcome-content {
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    color: var(--text-color);
+    margin-bottom: 1rem;
+}
+
+.welcome-footer {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+    text-align: right;
+}
+
+.welcome-date {
+    font-size: var(--font-size-xs);
+    color: var(--medium-gray);
+}
+
+.card-stats {
+    font-size: var(--font-size-sm);
+    color: var(--medium-gray);
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .welcome-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

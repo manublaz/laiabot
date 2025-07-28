@@ -1,0 +1,150 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Ver Conversación - LaIABot Admin{% endblock %}
+
+{% block page_title %}Conversación: {{ thread.title }}{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('admin_conversations') }}">Conversaciones</a> / Ver{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3 class="admin-card-title">Detalles de la Conversación</h3>
+        <div class="conversation-meta">
+            <span class="meta-item">ID: {{ thread.id }}</span>
+            <span class="meta-item">Fecha: {{ thread.dateregistry }}</span>
+            <span class="meta-item">Estado: {{ thread.status|title }}</span>
+        </div>
+    </div>
+    <div class="admin-card-content">
+        {% if comments %}
+        <div class="conversation-messages">
+            {% for comment in comments %}
+            <div class="message-item {% if comment.sender == 'user' %}user-message{% else %}bot-message{% endif %}">
+                <div class="message-header">
+                    <span class="message-sender">
+                        {% if comment.sender == 'user' %}
+                            👤 Usuario
+                        {% else %}
+                            🤖 LaIABot
+                        {% endif %}
+                    </span>
+                    <span class="message-time">{{ comment.dateregistry }}</span>
+                </div>
+                <div class="message-content">
+                    {{ comment.content|safe }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center">
+            <p class="text-muted">No hay mensajes en esta conversación.</p>
+        </div>
+        {% endif %}
+
+        <div class="conversation-actions">
+            <a href="{{ url_for('admin_conversations') }}" class="btn btn-secondary">
+                <span class="btn-icon">←</span>
+                Volver a Conversaciones
+            </a>
+            <form method="POST" action="{{ url_for('admin_delete_conversation', thread_id=thread.id) }}" 
+                  style="display: inline;" 
+                  onsubmit="return confirm('¿Estás seguro de eliminar esta conversación? Esta acción no se puede deshacer.')">
+                <button type="submit" class="btn btn-danger">
+                    <span class="btn-icon">🗑️</span>
+                    Eliminar Conversación
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.conversation-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: var(--font-size-sm);
+    color: var(--medium-gray);
+}
+
+.meta-item {
+    padding: 0.25rem 0.5rem;
+    background: var(--light-gray);
+    border-radius: var(--border-radius-sm);
+}
+
+.conversation-messages {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 1rem 0;
+}
+
+.message-item {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.user-message {
+    background: #e3f2fd;
+    border-left: 4px solid var(--accent-color);
+}
+
+.bot-message {
+    background: var(--light-gray);
+    border-left: 4px solid var(--primary-color);
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.message-sender {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.message-time {
+    font-size: var(--font-size-xs);
+    color: var(--medium-gray);
+}
+
+.message-content {
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.conversation-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 768px) {
+    .conversation-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .conversation-actions {
+        flex-direction: column;
+    }
+    
+    .message-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Editar Información - LaIABot Admin{% endblock %}
+
+{% block page_title %}Editar Información de Biblioteca{% endblock %}
+{% block breadcrumb %}<a href="{{ url_for('admin_library_info') }}">Info Biblioteca</a> / Editar{% endblock %}
+
+{% block content %}
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h3 class="admin-card-title">Editar Información</h3>
+    </div>
+    <div class="admin-card-content">
+        <form method="POST" class="admin-form" data-validate>
+            <div class="form-group">
+                <label for="title" class="form-label">Título *</label>
+                <input type="text" id="title" name="title" class="form-input" required
+                       placeholder="Ej: Horario de atención, Préstamo de libros, etc." value="{{ info.title }}">
+            </div>
+
+            <div class="form-group">
+                <label for="content" class="form-label">Contenido *</label>
+                <textarea id="content" name="content" class="form-input form-textarea" 
+                          rows="8" required
+                          placeholder="Describe detalladamente el servicio o actividad...">{{ info.content }}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('admin_library_info') }}" class="btn btn-secondary">
+                    <svg class="btn-icon" data-feather="arrow-left"></svg>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <svg class="btn-icon" data-feather="save"></svg>
+                    Actualizar Información
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Feather Icons
+    feather.replace();
+});
+</script>
+
+<style>
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--admin-color-border);
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
